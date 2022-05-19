@@ -10,10 +10,10 @@ async def test_create():
     db = AsyncpgSession()
     await db.connect()
 
-    
-    builder = SqlSelect("search_keys", ("id", "key", "date_created"), Where("id={id}", id=1), Limit(1))
+    builder = SqlSelect(
+        "search_keys", ("id", "key", "date_created"), Where(id=1), Limit(1)
+    )
     query = render(builder)
     print(query.sql, query.arguments)
-
 
     await db.close()

@@ -32,6 +32,12 @@ class Limit(SqlOp):
 
 
 class And(SqlOp):
+    def __init__(self, *conds, **kwargs):
+        self._conds: tuple[Union[str, "SqlOp"]] = (
+            conds if conds else [f"{key} = {{{key}}}" for key in kwargs]
+        )
+        self._kwargs = kwargs
+
     def build(self):
         return "(" + " AND ".join(map(str, self._conds)) + ")"
 

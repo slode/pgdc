@@ -17,7 +17,9 @@ class Relatable(Protocol):
 
 class Relation:
     @classmethod
-    async def create(cls: Type[Relatable], **kwargs: dict[str, ValidSqlArg]) -> Optional[Relatable]:
+    async def create(
+        cls: Type[Relatable], **kwargs: dict[str, ValidSqlArg]
+    ) -> Optional[Relatable]:
         attrs = list(cls.__dataclass_fields__.keys())
         b = SqlInsert(cls.__table_name__, attrs, **kwargs)
         row = await cls.__db_session__.fetchrow(b)
@@ -25,7 +27,9 @@ class Relation:
 
     @classmethod
     async def update(
-        cls: Type[Relatable], where: Optional[Where] = None, **kwargs: dict[str, ValidSqlArg]
+        cls: Type[Relatable],
+        where: Optional[Where] = None,
+        **kwargs: dict[str, ValidSqlArg]
     ) -> list[Relatable]:
         attrs = list(cls.__dataclass_fields__.keys())
         b = SqlUpdate(cls.__table_name__, attrs, where, **kwargs)
@@ -51,7 +55,7 @@ class Relation:
     @classmethod
     async def get(
         cls: Type[Relatable], where: Optional[Where] = None, limit: Optional[int] = None
-        ) -> list[Relatable]:
+    ) -> list[Relatable]:
         b = SqlSelect(
             cls.__table_name__, cls.__dataclass_fields__.keys(), where, Limit(limit)
         )
