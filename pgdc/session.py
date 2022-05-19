@@ -20,22 +20,22 @@ class AsyncpgSession:
         Relation.__db_session__ = self
 
     async def execute(self, sql: SqlBuilder) -> asyncpg.Record:
-        query = render(sql)
+        query, args = render(sql)
         assert self.pool is not None
         async with self.pool.acquire() as conn:
-            return await conn.execute(query.sql, *query.arguments)
+            return await conn.execute(query, *args)
 
     async def fetchrow(self, sql: SqlBuilder) -> asyncpg.Record:
-        query = render(sql)
+        query, args = render(sql)
         assert self.pool is not None
         async with self.pool.acquire() as conn:
-            return await conn.fetchrow(query.sql, *query.arguments)
+            return await conn.fetchrow(query, *args)
 
     async def fetch(self, sql: SqlBuilder) -> list[asyncpg.Record]:
-        query = render(sql)
+        query, args = render(sql)
         assert self.pool is not None
         async with self.pool.acquire() as conn:
-            return await conn.fetch(query.sql, *query.arguments)
+            return await conn.fetch(query, *args)
 
     async def close(self):
         Relation.__db_session__ = None

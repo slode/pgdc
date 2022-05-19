@@ -5,12 +5,6 @@ from typing import Any, Optional
 ValidSqlArg = Any
 
 
-@dataclasses.dataclass
-class SqlQuery:
-    sql: str
-    arguments: list[ValidSqlArg]
-
-
 class SqlArgs:
     def __init__(self, args: Optional[dict[str, ValidSqlArg]] = None):
         ...

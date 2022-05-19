@@ -111,8 +111,7 @@ class SqlDelete(SqlBuilder):
         super().__init__(
             query=f"""
             DELETE FROM {table_name}
-            {self.where};
-            """
+            {self.where};"""
         )
 
     def args(self):

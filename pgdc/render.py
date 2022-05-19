@@ -6,12 +6,6 @@ from .args import SqlArgs, AsyncpgArgs, Psychopg2Args, ValidSqlArg
 from dataclasses import dataclass
 
 
-@dataclass
-class SqlQuery:
-    sql: str
-    arguments: list[ValidSqlArg]
-
-
 def render(
     builder: SqlBuilder,
     flavor: Literal["asyncpg", "psycopg2"] = "asyncpg",
@@ -41,4 +35,4 @@ def render(
             "Possibly missing arguments; {} found in query\nSQL: %s" % query
         )
 
-    return SqlQuery(sql=query, arguments=arguments)
+    return (query, arguments)
