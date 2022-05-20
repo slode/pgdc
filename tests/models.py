@@ -7,7 +7,7 @@ from typing import Optional
 from pgdc import Relation
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(frozen=True)
 class SearchKey(Relation):
     __table_name__ = "search_keys"
 
@@ -16,7 +16,7 @@ class SearchKey(Relation):
     date_created: datetime
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(frozen=True)
 class SearchIndexInt(Relation):
     __table_name__ = "search_index_int"
 
