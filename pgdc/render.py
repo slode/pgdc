@@ -30,9 +30,4 @@ def render(
 
     arguments = args.args()
 
-    if ("{" in query) and ("}" in query):
-        raise AssertionError(
-            "Possibly missing arguments; {} found in query\nSQL: %s" % query
-        )
-
     return (query, arguments)
