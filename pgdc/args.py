@@ -28,6 +28,7 @@ class Psychopg2Args(SqlArgs):
     def args(self) -> list[ValidSqlArg]:
         return self._used_values
 
+
 class AsyncpgArgs(SqlArgs):
     def __init__(self, args: Optional[dict[str, ValidSqlArg]] = None):
         self._args: dict[str, ValidSqlArg] = args or {}

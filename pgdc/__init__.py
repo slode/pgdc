@@ -14,11 +14,11 @@ from .where import (
     Or,
     Where,
 )
-from .session import AsyncpgSession
+from .session import Session
 
 __all__ = [
     "And",
-    "AsyncpgSession",
+    "Session",
     "Cond",
     "Limit",
     "Or",

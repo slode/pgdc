@@ -7,18 +7,14 @@ from dataclasses import dataclass
 
 
 def render(
-    builder: SqlBuilder,
+    template_query: str,
+    raw_args: dict[str, ValidSqlArg],
     flavor: Literal["asyncpg", "psycopg2"] = "asyncpg",
-    **kwargs,
 ):
-
-    raw_args = builder.args() | kwargs
 
     args: Union[SqlArgs] = (
         AsyncpgArgs(raw_args) if flavor == "asyncpg" else Psychopg2Args(raw_args)
     )
-
-    template_query = builder.get_query()
 
     assert template_query is not None
 
