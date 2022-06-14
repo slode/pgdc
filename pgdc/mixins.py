@@ -1,15 +1,11 @@
-from typing import Any, Optional, Union, Iterable, Protocol, TypeVar, Type
-from dataclasses import dataclass, astuple, asdict
-
-from .builders import SqlSelect, SqlInsert, SqlUpdate, SqlDelete
-from .where import Where, Limit
-from .args import ValidSqlArg
+from typing import Union
+from dataclasses import dataclass
 
 
 @dataclass
 class Relation:
     __table_name__: str
-    __table_pkey__: list[str]
+    __table_pkey__: tuple[str]
 
     def __init_subclass__(
         cls, table_name: str = None, pkey: Union[None, str, tuple[str]] = None, **kwargs

@@ -12,11 +12,9 @@ def render(
     flavor: Literal["asyncpg", "psycopg2"] = "asyncpg",
 ):
 
-    args: Union[SqlArgs] = (
+    args: SqlArgs = (
         AsyncpgArgs(raw_args) if flavor == "asyncpg" else Psychopg2Args(raw_args)
     )
-
-    assert template_query is not None
 
     try:
         query = template_query.format_map(args)

@@ -1,4 +1,4 @@
-from typing import Optional, Iterable
+from typing import Optional, Sequence
 
 from .args import ValidSqlArg
 from .where import Where, Limit
@@ -12,80 +12,56 @@ class SqlBuilder:
     A simple SQL builder.
     """
 
-    def __init__(self, query: Optional[str] = None):
-        self._templated_query = query
-
-    def args(self):
-        return {}
-
-    def get_query(self) -> Optional[str]:
-        """
-        Returns the raw, unrendered sql query
-        """
-        return self._templated_query
-
-
-class SqlSelect(SqlBuilder):
     def __init__(
         self,
         table_name: str,
-        attrs: Iterable[str],
+        attrs: Sequence[str] = tuple(),
+        pkeys: Sequence[str] = tuple(),
     ):
+        self.table_name = table_name
+        self.attrs = attrs
+        self.pkeys = pkeys
+        self.attrs_string = ",".join(attrs)
+        self.pkeys_string = ",".join(pkeys)
 
-        super().__init__(
-            query=f"""
-            SELECT
-                {', '.join(attrs)}
-            FROM
-                {table_name}"""
-        )
-
-    def args(self):
-        return self.where.args() | self.limit.args()
-
-    def query(
+    def select(
         self,
         where: Optional[Where] = None,
         limit: Optional[Limit] = None,
-    ) -> Optional[str]:
+    ) -> tuple[str, dict[str, ValidSqlArg]]:
         """
-        Returns the raw, unrendered sql query
+        Returns the raw, unrendered sql select query
         """
         where = where or NoWhere
         limit = limit or NoLimit
 
         return (
             f"""
-            {self._templated_query}
+            SELECT
+                {self.attrs_string}
+            FROM
+                {self.table_name}
             {where}
-            {limit}; """,
+            {limit};""",
             where.args() | limit.args(),
         )
 
-
-class SqlUpdate(SqlBuilder):
-    def __init__(self, table_name: str, attrs: list[str], pkeys: tuple[str] = tuple()):
-        self.table_name = table_name
-        self.attrs = attrs
-        self.pkeys = pkeys
-        self.attrs_string = ",".join(attrs)
-        self.pkeys_string = ",".join(pkeys)
-        super().__init__()
-
-    def query(
+    def update(
         self,
-        where: Where = NoWhere,
+        where: Optional[Where] = None,
         **kwargs: dict[str, ValidSqlArg],
-    ) -> Optional[str]:
+    ) -> tuple[str, dict[str, ValidSqlArg]]:
         """
-        Returns the raw, unrendered sql query
+        Returns the raw, unrendered sql update query
         """
         assert len(kwargs) > 0
 
+        where = where or NoWhere
         update_string = ", ".join([key + " = {" + key + "}" for key in kwargs.keys()])
         upsert_string = ", ".join([f"{key} = EXCLUDED.{key}" for key in kwargs.keys()])
 
-        return f"""
+        return (
+            f"""
             UPDATE
                 {self.table_name}
             SET
@@ -95,44 +71,40 @@ class SqlUpdate(SqlBuilder):
             DO UPDATE
                 {upsert_string}
             RETURNING
-                ({self.attrs_string});"""
+                ({self.attrs_string});""",
+            where.args() | kwargs,
+        )
 
+    def insert(
+        self, **kwargs: dict[str, ValidSqlArg]
+    ) -> tuple[str, dict[str, ValidSqlArg]]:
+        assert set(kwargs.keys()).issubset(set(self.attrs))
 
-class SqlInsert(SqlBuilder):
-    def __init__(
-        self, table_name: str, attrs: list[str], **kwargs: dict[str, ValidSqlArg]
-    ):
-        assert set(kwargs.keys()).issubset(set(attrs))
-
-        self._args = kwargs
+        attrs = ", ".join(kwargs.keys())
         values = ["{" + key + "}" for key in kwargs.keys()]
 
-        super().__init__(
-            query=f"""
-            INSERT INTO {table_name} ({', '.join(self._args.keys())})
-            VALUES ({', '.join(values)})
-            RETURNING ({', '.join(attrs)});"""
+        return (
+            f"""
+            INSERT INTO
+                {self.table_name} ({attrs})
+            VALUES
+                ({', '.join(values)})
+            ON CONFLICT ({self.pkeys_string}) DO NOTHING
+            RETURNING
+                ({', '.join(self.attrs)});""",
+            kwargs,
         )
 
-    def args(self):
-        return self._args
-
-
-class SqlDelete(SqlBuilder):
-    def __init__(
+    def delete(
         self,
-        table_name: str,
         where: Optional[Where] = None,
-    ):
+    ) -> tuple[str, dict[str, ValidSqlArg]]:
         assert where is not None
+        where = where or NoWhere
 
-        self.where = where or NoWhere
-
-        super().__init__(
-            query=f"""
-            DELETE FROM {table_name}
-            {self.where};"""
+        return (
+            f"""
+            DELETE FROM {self.table_name}
+            {where};""",
+            where.args(),
         )
-
-    def args(self):
-        return self.where.args()
