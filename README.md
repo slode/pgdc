@@ -1,2 +1,2 @@
 # pgdc
-PGDC is a library for accessing asynchpg through python dataclasses
+PGDC is a library for accessing asyncpg through python dataclasses
