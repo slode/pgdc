@@ -1,10 +1,10 @@
-import tests.ctx
+from tests import ctx
 import asyncio
 
 from pgdc import (
     Where,
     Limit,
-    SqlBuilder,
+    DcBuilder,
     render,
     session,
 )
@@ -13,15 +13,15 @@ from .models import SearchKey, SearchIndexInt
 
 
 async def test_insert():
-    builder = SqlBuilder("search_keys", ("id", "key", "date_created"), pkeys=("id",))
-    query, args = render(*builder.insert(key="key-value"))
+    builder = DcBuilder(SearchKey, table_name="search_keys", pkeys=("id",))
+    query, args = render(*builder.insert(key=2))
     print(query, args)
-    query, args = render(*builder.insert(key="key-value"), flavor="psycopg2")
+    query, args = render(*builder.insert(key=2), flavor="psycopg2")
     print(query, args)
 
 
 async def test_select():
-    builder = SqlBuilder("search_keys", ("id", "key", "date_created"), pkeys=("id",))
+    builder = DcBuilder(SearchKey, pkeys=("id",))
     query, args = render(*builder.select(Where(id=699), Limit(1)))
     print(query, args)
     query, args = render(*builder.select(Where(id=699), Limit(1)), flavor="psycopg2")
@@ -29,7 +29,7 @@ async def test_select():
 
 
 async def test_update():
-    builder = SqlBuilder("search_keys", ("id", "key", "date_created"), pkeys=("id",))
+    builder = DcBuilder(SearchKey)
     query, args = render(*builder.update(Where(id=1), key="updated-key-text"))
     print(query, args)
     query, args = render(
@@ -39,7 +39,7 @@ async def test_update():
 
 
 async def test_delete():
-    builder = SqlBuilder("search_keys", ("id", "key", "date_created"), pkeys=("id",))
+    builder = DcBuilder(SearchKey)
     query, args = render(*builder.delete(Where(id=1)))
     print(query, args)
     query, args = render(*builder.delete(Where(id=1)), flavor="psycopg2")

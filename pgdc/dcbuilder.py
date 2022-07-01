@@ -1,50 +1,62 @@
-from typing import Optional, Sequence
+from typing import Type, Optional, Sequence
+
+import dataclasses
+from dataclasses import fields, field
 
 from .args import ValidSqlArg
-from .where import Where, Limit
+from .where import OrderBy, Where, Limit
+from .mixins import Relation
 
 NoWhere = Where()
 NoLimit = Limit(None)
+NoOrder = OrderBy()
 
 
-class SqlBuilder:
+class DcBuilder:
     """
     A simple SQL builder.
     """
 
     def __init__(
         self,
-        table_name: str,
-        attrs: Sequence[any] = tuple(),
+        cls: Type[Relation],
+        table_name: Optional[str] = None,
         pkeys: Sequence[str] = tuple(),
     ):
-        self.table_name = table_name
-        self.attrs = attrs
-        self.pkeys = pkeys
-        self.attrs_string = ",".join(attr for attr in attrs)
-        self.pkeys_string = ",".join(pkeys)
+        self.table_name = table_name or cls.__table_name__ or None
+        self.pkeys = pkeys or cls.__table_pkeys__
+
+        self.fields = tuple(
+            f for f in dataclasses.fields(cls) if not f.name.startswith("_")
+        )
+        self.attrs = [f.name for f in self.fields]
+        self.select_string = ",".join(
+            f.metadata.get("select") or f.name for f in self.fields
+        )
 
     def select(
         self,
         where: Optional[Where] = None,
+        order_by: Optional[OrderBy] = None,
         limit: Optional[Limit] = None,
     ) -> tuple[str, dict[str, ValidSqlArg]]:
         """
         Returns the raw, unrendered sql select query
         """
         where = where or NoWhere
+        order_by = order_by or NoOrder
         limit = limit or NoLimit
-        select_string = self.attrs_string
 
         return (
             f"""
             SELECT
-                {select_string}
+                {self.select_string}
             FROM
                 {self.table_name}
             {where}
+            {order_by}
             {limit};""",
-            where.args() | limit.args(),
+            where.args() | order_by.args() | limit.args(),
         )
 
     def update(
@@ -59,7 +71,6 @@ class SqlBuilder:
 
         where = where or NoWhere
         update_string = ", ".join([key + " = {" + key + "}" for key in kwargs.keys()])
-        select_string = self.attrs_string
 
         return (
             f"""
@@ -69,7 +80,7 @@ class SqlBuilder:
                 {update_string}
             {where}
             RETURNING
-                ({self.attrs_string});""",
+                {self.select_string};""",
             where.args() | kwargs,
         )
 
@@ -77,9 +88,16 @@ class SqlBuilder:
         self, **kwargs: dict[str, ValidSqlArg]
     ) -> tuple[str, dict[str, ValidSqlArg]]:
 
+        pkeys_string = ", ".join(self.pkeys)
         attrs_string = ", ".join(kwargs.keys())
         values_string = ", ".join(["{" + key + "}" for key in kwargs.keys()])
-        select_string = self.attrs_string
+        upsert_string = ", ".join(
+            [
+                f"{key} = EXCLUDED.{key}"
+                for key in kwargs.keys()
+                if key not in self.pkeys
+            ]
+        )
 
         return (
             f"""
@@ -87,8 +105,11 @@ class SqlBuilder:
                 {self.table_name} ({attrs_string})
             VALUES
                 ({values_string})
+            ON CONFLICT ({pkeys_string}) DO UPDATE
+            SET
+                {upsert_string}
             RETURNING
-                ({select_string});""",
+                {self.select_string};""",
             kwargs,
         )
 

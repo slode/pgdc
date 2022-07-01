@@ -8,18 +8,16 @@ from pgdc import Relation
 
 
 @dataclass(frozen=True)
-class SearchKey(Relation):
-    __table_name__ = "search_keys"
-
+class SearchKey(Relation, table_name="search_keys", pkeys="id"):
     id: Optional[int]
     key: str
     date_created: datetime
 
 
 @dataclass(frozen=True)
-class SearchIndexInt(Relation):
-    __table_name__ = "search_index_int"
-
+class SearchIndexInt(
+    Relation, table_name="search_index_int", pkeys=("doc_id", "key_id")
+):
     doc_id: int
     key_id: int
     date_created: datetime

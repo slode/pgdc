@@ -1,6 +1,7 @@
 from .builders import (
     SqlBuilder,
 )
+from .dcbuilder import DcBuilder
 from .mixins import Relation
 from .render import render
 from .where import (
@@ -26,6 +27,6 @@ __all__ = [
     "render",
     "Select",
     "Session",
-    "SqlBuilder",
+    "DcBuilder",
     "Where",
 ]
