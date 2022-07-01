@@ -19,6 +19,24 @@ class SqlOp:
         )
         return args
 
+class Select(SqlOp):
+    def build(self):
+        return "" if not self._conds else "SELECT\n    " + ",\n    ".join(map(str, self._conds))
+
+class GroupBy(SqlOp):
+    def build(self):
+        return "" if not self._conds else "GROUP BY\n    " + ",\n    ".join(map(str, self._conds))
+
+class OrderBy(SqlOp):
+    def build(self):
+        return "" if not self._conds else "ORDER BY " + ", ".join(map(str, self._conds))
+
+class From(SqlOp):
+    def __init__(self, table: str):
+        self._table = table
+
+    def build(self):
+        return f"FROM\n    {self._table}"
 
 class Limit(SqlOp):
     def __init__(self, limit: Optional[int]):
@@ -48,7 +66,7 @@ class Cond(And):
 
 class Where(And):
     def build(self):
-        return "WHERE " + super().build() if self._conds else ""
+        return "WHERE (\n    " + "\n    AND ".join(map(str, self._conds)) + ")"
 
 
 class Or(SqlOp):

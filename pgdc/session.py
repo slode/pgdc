@@ -38,7 +38,7 @@ class Session:
     def sql_builder(self, cls: Type[Relation]):
         if cls not in self.__sql_builder_cache__:
             attrs = tuple(
-                f.name for f in dataclasses.fields(cls) if not f.name.startswith("__")
+                f for f in dataclasses.fields(cls) if not f.name.startswith("__")
             )
             self.__sql_builder_cache__[cls] = SqlBuilder(
                 cls.__table_name__, attrs, cls.__table_pkey__
@@ -83,7 +83,7 @@ class Session:
         self,
         cls: Type[Relation],
         where: Optional[Where] = None,
-        limit: Optional[int] = 1,
+        limit: Optional[int] = None,
     ) -> Optional[Relation]:
 
         template_query, template_args = self.sql_builder(cls).select(where, limit)

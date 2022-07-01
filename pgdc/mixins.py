@@ -2,7 +2,6 @@ from typing import Union
 from dataclasses import dataclass
 
 
-@dataclass
 class Relation:
     __table_name__: str
     __table_pkey__: tuple[str]

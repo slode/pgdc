@@ -15,13 +15,13 @@ class SqlBuilder:
     def __init__(
         self,
         table_name: str,
-        attrs: Sequence[str] = tuple(),
+        attrs: Sequence[any] = tuple(),
         pkeys: Sequence[str] = tuple(),
     ):
         self.table_name = table_name
         self.attrs = attrs
         self.pkeys = pkeys
-        self.attrs_string = ",".join(attrs)
+        self.attrs_string = ",".join(attr.name for attr in attrs)
         self.pkeys_string = ",".join(pkeys)
 
     def select(
@@ -34,11 +34,12 @@ class SqlBuilder:
         """
         where = where or NoWhere
         limit = limit or NoLimit
+        select_string = ",".join(attr.metadata.get("select") or attr.name for attr in self.attrs)
 
         return (
             f"""
             SELECT
-                {self.attrs_string}
+                {select_string}
             FROM
                 {self.table_name}
             {where}
@@ -59,6 +60,7 @@ class SqlBuilder:
         where = where or NoWhere
         update_string = ", ".join([key + " = {" + key + "}" for key in kwargs.keys()])
         upsert_string = ", ".join([f"{key} = EXCLUDED.{key}" for key in kwargs.keys()])
+        select_string = ",".join(attr.metadata.get("select") or attr.name for attr in self.attrs)
 
         return (
             f"""
@@ -78,20 +80,20 @@ class SqlBuilder:
     def insert(
         self, **kwargs: dict[str, ValidSqlArg]
     ) -> tuple[str, dict[str, ValidSqlArg]]:
-        assert set(kwargs.keys()).issubset(set(self.attrs))
 
-        attrs = ", ".join(kwargs.keys())
-        values = ["{" + key + "}" for key in kwargs.keys()]
+        attrs_string = ", ".join(kwargs.keys())
+        values_string = ", ".join(["{" + key + "}" for key in kwargs.keys()])
+        select_string = ",".join(attr.metadata.get("select") or attr.name for attr in self.attrs)
 
         return (
             f"""
             INSERT INTO
-                {self.table_name} ({attrs})
+                {self.table_name} ({attrs_string})
             VALUES
-                ({', '.join(values)})
+                ({values_string})
             ON CONFLICT ({self.pkeys_string}) DO NOTHING
             RETURNING
-                ({', '.join(self.attrs)});""",
+                ({self.attrs_string});""",
             kwargs,
         )
 

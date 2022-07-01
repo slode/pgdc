@@ -11,7 +11,7 @@ from pgdc import (
 
 
 async def test_insert():
-    builder = SqlBuilder("search_keys", ("id", "key", "date_created"))
+    builder = SqlBuilder("search_keys", ("id", "key", "date_created"), pkey='id')
     query, args = render(*builder.insert(key=2))
     print(query, args)
     query, args = render(*builder.insert(key=2), flavor="psycopg2")
@@ -19,7 +19,7 @@ async def test_insert():
 
 
 async def test_select():
-    builder = SqlSelect("search_keys", ("id", "key", "date_created"))
+    builder = SqlBuilder("search_keys", ("id", "key", "date_created"), pkey='id')
     query, args = render(*builder.select(Where(id=699), Limit(1)))
     print(query, args)
     query, args = render(*builder.select(Where(id=699), Limit(1)), flavor="psycopg2")
@@ -27,7 +27,7 @@ async def test_select():
 
 
 async def test_update():
-    builder = SqlUpdate("search_keys", ("id", "key", "date_created"))
+    builder = SqlBuilder("search_keys", ("id", "key", "date_created"), pkey='id')
     query, args = render(*builder.update(Where(id=1), key="updated-key-text"))
     print(query, args)
     query, args = render(
@@ -37,7 +37,7 @@ async def test_update():
 
 
 async def test_delete():
-    builder = SqlDelete("search_keys")
+    builder = SqlBuilder("search_keys", ("id", "key", "date_created"), pkey='id')
     query, args = render(*builder.delete(Where(id=1)))
     print(query, args)
     query, args = render(*builder.delete(Where(id=1)), flavor="psycopg2")

@@ -7,9 +7,7 @@ from tests.models import SearchKey, SearchIndexInt
 
 
 async def test_create():
-    pool = await asyncpg.create_pool(
-
-    )
+    pool = await asyncpg.create_pool()
     session = Session(pool)
 
     key = f"my-test-key-{id(db)}"
@@ -20,7 +18,10 @@ async def test_create():
 
     N: int = 100
     q3 = await asyncio.gather(
-        *[session.create(SearchIndexInt, doc_id=i, key_id=q2.id, value=i * i) for i in range(N)]
+        *[
+            session.create(SearchIndexInt, doc_id=i, key_id=q2.id, value=i * i)
+            for i in range(N)
+        ]
     )
     assert len(q3) == N
 
@@ -38,10 +39,7 @@ async def test_create():
     )
     assert q5[0].value == r1.value * 3
 
-    q6 = await session.delete(
-            SearchIndexInt,
-            Where("key_id = {key_id}", key_id=q2.id)
-    )
+    q6 = await session.delete(SearchIndexInt, Where("key_id = {key_id}", key_id=q2.id))
     assert f"DELETE {N}" == q6
 
     await db.close()
