@@ -73,9 +73,7 @@ class SqlBuilder:
             where.args() | kwargs,
         )
 
-    def insert(
-        self, **kwargs: ValidSqlArg
-    ) -> tuple[str, dict[str, ValidSqlArg]]:
+    def insert(self, **kwargs: ValidSqlArg) -> tuple[str, dict[str, ValidSqlArg]]:
 
         attrs_string = ", ".join(kwargs.keys())
         values_string = ", ".join(["{" + key + "}" for key in kwargs.keys()])

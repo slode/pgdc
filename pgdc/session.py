@@ -23,6 +23,7 @@ class Session:
     async def _execute(self, query: str, args: list[ValidSqlArg]) -> str:
         if self.debug:
             print(query, args)
+
         async with self.pool.acquire() as conn:
             return await conn.execute(query, *args)
 
@@ -33,23 +34,26 @@ class Session:
     ) -> Optional[asyncpg.Record]:
         if self.debug:
             print(query, args)
+
         async with self.pool.acquire() as conn:
             return await conn.fetchrow(query, *args)
 
     async def _fetch(self, query: str, args: list[ValidSqlArg]) -> list[asyncpg.Record]:
         if self.debug:
             print(query, args)
+
         async with self.pool.acquire() as conn:
             return await conn.fetch(query, *args)
 
     def sql_builder(self, cls: Type[Relation]):
-        if cls not in self.__sql_builder_cache__:
-            self.__sql_builder_cache__[cls] = DcBuilder(cls)
+        """Retrieves or instantiaties a DcBuilder instance."""
+        return self.__sql_builder_cache__.get(
+            cls
+        ) or self.__sql_builder_cache__.setdefault(cls, DcBuilder(cls))
 
-        return self.__sql_builder_cache__[cls]
-
-    def hydrate(self, cls: Type[Relation], mapping: Mapping):
-        return cls(**mapping)
+    def hydrate(self, cls: Type[Relation], mapping: Optional[Mapping]):
+        """Instantiates a Relation instance from a mapping"""
+        return None if mapping is None else cls(**mapping)
 
     def get_pkey(self, obj: Relation):
         return (getattr(obj, pkey_attr) for pkey_attr in obj.__table_pkeys__)
@@ -57,10 +61,15 @@ class Session:
     async def create(
         self, cls: Type[Relation], **kwargs: dict[str, ValidSqlArg]
     ) -> Optional[Relation]:
+        """Creates a new Relation instance based on kwargs input.
+
+        If named argument update_on_collision is set to True,
+        values will be updated on collision.
+        """
         template_query, template_args = self.sql_builder(cls).insert(**kwargs)
         query, query_args = render(template_query, template_args)
-        row = await self._fetchrow(query, query_args)
-        return None if row is None else self.hydrate(cls, row)
+
+        return self.hydrate(cls, await self._fetchrow(query, query_args))
 
     async def update(
         self,
@@ -68,9 +77,13 @@ class Session:
         where: Optional[Where] = None,
         **kwargs: dict[str, ValidSqlArg]
     ) -> list[Relation]:
+        """Updates a Relation instance based on kwargs input.
+
+        Returns the updated Relation instances.
+        """
         template_query, template_args = self.sql_builder(cls).update(where, **kwargs)
         query, query_args = render(template_query, template_args)
-        attrs = self.sql_builder(cls).attrs
+
         return [self.hydrate(cls, row) for row in await self._fetch(query, query_args)]
 
     async def delete(self, cls: Type[Relation], where: Optional[Where] = None) -> str:
@@ -84,11 +97,15 @@ class Session:
         where: Optional[Where] = None,
         limit: Optional[int] = None,
     ) -> Optional[Relation]:
+        """Retrieves a single Relation instance.
+
+        Returns None if no match if found.
+        """
 
         template_query, template_args = self.sql_builder(cls).select(where, limit)
         query, query_args = render(template_query, template_args)
-        row = await self._fetchrow(query, query_args)
-        return None if row is None else self.hydrate(cls, row)
+
+        return self.hydrate(cls, await self._fetchrow(query, query_args))
 
     async def get(
         self,
@@ -97,9 +114,12 @@ class Session:
         order_by: Optional[OrderBy] = None,
         limit: Optional[Limit] = None,
     ) -> list[Relation]:
+        """Retrieves single Relation instances.
+        """
 
         template_query, template_args = self.sql_builder(cls).select(
             where, order_by, limit
         )
         query, query_args = render(template_query, template_args)
+
         return [self.hydrate(cls, row) for row in await self._fetch(query, query_args)]
