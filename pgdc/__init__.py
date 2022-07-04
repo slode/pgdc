@@ -5,7 +5,7 @@ from .builders import (
 from .dcbuilder import DcBuilder
 from .mixins import Relation
 from .render import render
-from .where import (
+from .clauses import (
     And,
     Cond,
     GroupBy,

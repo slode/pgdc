@@ -1,7 +1,7 @@
 from typing import Optional, Sequence
 
 from .args import ValidSqlArg
-from .where import Where, Limit
+from .clauses import Where, Limit
 
 NoWhere = Where()
 NoLimit = Limit(None)

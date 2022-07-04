@@ -5,7 +5,7 @@ from .render import render
 from .dcbuilder import DcBuilder
 from .args import ValidSqlArg
 from .mixins import Relation
-from .where import OrderBy, Where, Limit
+from .clauses import OrderBy, Where, Limit
 
 from typing import Optional, Type, Union, Mapping
 
