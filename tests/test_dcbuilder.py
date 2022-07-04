@@ -40,6 +40,7 @@ async def test_update():
 
 async def test_delete():
     builder = DcBuilder(SearchKey)
+
     query, args = render(*builder.delete(Where(id=1)))
     print(query, args)
     query, args = render(*builder.delete(Where(id=1)), flavor="psycopg2")

@@ -22,20 +22,12 @@ class SqlOp:
 
 class Select(SqlOp):
     def build(self):
-        return (
-            ""
-            if not self._conds
-            else "SELECT\n    " + ",\n    ".join(map(str, self._conds))
-        )
+        return "" if not self._conds else "SELECT " + ", ".join(map(str, self._conds))
 
 
 class GroupBy(SqlOp):
     def build(self):
-        return (
-            ""
-            if not self._conds
-            else "GROUP BY\n    " + ",\n    ".join(map(str, self._conds))
-        )
+        return "" if not self._conds else "GROUP BY " + ", ".join(map(str, self._conds))
 
 
 class OrderBy(SqlOp):
@@ -48,7 +40,7 @@ class From(SqlOp):
         self._table = table
 
     def build(self):
-        return f"FROM\n    {self._table}"
+        return f"FROM {self._table}"
 
 
 class Limit(SqlOp):
@@ -79,7 +71,7 @@ class Cond(And):
 
 class Where(And):
     def build(self):
-        return "WHERE (\n    " + "\n    AND ".join(map(str, self._conds)) + ")"
+        return "WHERE (" + " AND ".join(map(str, self._conds)) + ")"
 
 
 class Or(SqlOp):

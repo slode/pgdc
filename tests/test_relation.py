@@ -26,13 +26,15 @@ async def test_create():
     N: int = 1000
     q3 = await asyncio.gather(
         *[
-            session.create(SearchIndexInt, doc_id=i, key_id=q2.id, value=i*i)
+            session.create(SearchIndexInt, doc_id=i, key_id=q2.id, value=i * i)
             for i in range(N)
         ]
     )
     assert len(q3) == N
 
-    q4 = await session.get(SearchIndexInt, Where(key_id=q2.id), OrderBy("doc_id ASC", "key_id ASC"))
+    q4 = await session.get(
+        SearchIndexInt, Where(key_id=q2.id), OrderBy("doc_id ASC", "key_id ASC")
+    )
     assert len(q4) == N
 
     assert q3 == q4
@@ -45,7 +47,7 @@ async def test_create():
     )
     assert q5[0].value == r1.value * 3
 
-    q6 = await session.delete(SearchIndexInt, Where("key_id = {key_id}", key_id=q2.id))
-    assert f"DELETE {N}" == q6
+    # q6 = await session.delete(SearchIndexInt, Where("key_id = {key_id}", key_id=q2.id))
+    # assert f"DELETE {N}" == q6
 
     await pool.close()

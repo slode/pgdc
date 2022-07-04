@@ -91,6 +91,8 @@ class Session:
         limit: Optional[Limit] = None,
     ) -> list[Relation]:
 
-        template_query, template_args = self.sql_builder(cls).select(where, order_by, limit)
+        template_query, template_args = self.sql_builder(cls).select(
+            where, order_by, limit
+        )
         query, query_args = render(template_query, template_args)
         return [self.hydrate(cls, row) for row in await self._fetch(query, query_args)]
