@@ -19,7 +19,7 @@ class Session:
     def __init__(self, pool: asyncpg.Pool):
         self.pool: asyncpg.pool = pool
 
-    async def _execute(self, query: str, args: list[ValidSqlArg]) -> asyncpg.Record:
+    async def _execute(self, query: str, args: list[ValidSqlArg]) -> str:
         async with self.pool.acquire() as conn:
             return await conn.execute(query, *args)
 
@@ -27,7 +27,7 @@ class Session:
         self,
         query: str,
         args: list[ValidSqlArg],
-    ) -> asyncpg.Record:
+    ) -> Optional[asyncpg.Record]:
         async with self.pool.acquire() as conn:
             return await conn.fetchrow(query, *args)
 
@@ -45,7 +45,7 @@ class Session:
         return cls(**mapping)
 
     def get_pkey(self, obj: Relation):
-        return (getattr(obj, pkey_attr) for pkey_attr in obj.__table_pkey__)
+        return (getattr(obj, pkey_attr) for pkey_attr in obj.__table_pkeys__)
 
     async def create(
         self, cls: Type[Relation], **kwargs: dict[str, ValidSqlArg]

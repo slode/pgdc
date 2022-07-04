@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence
 
 from .args import ValidSqlArg
 from .where import Where, Limit
@@ -15,7 +15,7 @@ class SqlBuilder:
     def __init__(
         self,
         table_name: str,
-        attrs: Sequence[any] = tuple(),
+        attrs: Sequence[Any] = tuple(),
         pkeys: Sequence[str] = tuple(),
     ):
         self.table_name = table_name

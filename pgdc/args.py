@@ -33,7 +33,7 @@ class AsyncpgArgs(SqlArgs):
     def __init__(self, args: Optional[dict[str, ValidSqlArg]] = None):
         self._args: dict[str, ValidSqlArg] = args or {}
         self._used_values: list[ValidSqlArg] = []
-        self._used_args: dict[str, int] = {}
+        self._used_args: dict[str, str] = {}
 
     def __getitem__(self, key: str) -> ValidSqlArg:
         if key not in self._used_args:
