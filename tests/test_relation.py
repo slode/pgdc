@@ -5,7 +5,7 @@ import asyncpg
 import os
 import uuid
 
-from pgdc import Session, Where, OrderBy
+from pgdc import Session, Where, OrderBy, Verbatim
 from tests.models import SearchKey, SearchIndexInt
 
 
@@ -13,17 +13,22 @@ async def test_create():
     pool = await asyncpg.create_pool(
         database=os.environ.get("POSTGRESQL_DATABASE"),
         user=os.environ.get("POSTGRESQL_USER"),
-        password=os.environ.get("POSTGREs_PASSWORDUSER"),
+        password=os.environ.get("POSTGRES_PASSWORDUSER"),
     )
-    session = Session(pool)
+    session = Session(pool, debug=True)
 
     key = f"my-test-key-{uuid.uuid4().hex}"
-    q1 = await session.create(SearchKey, key=key)
+    q1 = await session.create(
+        SearchKey, key=key, date_created=Verbatim("CURRENT_TIMESTAMP")
+    )
 
     q2 = await session.get_one(SearchKey, Where(key=key))
     assert q1 == q2
+    q12 = await session.update(
+        SearchKey, date_created=Verbatim("NOW()"), where=Where(key=key)
+    )
 
-    N: int = 1000
+    N: int = 10
     q3 = await asyncio.gather(
         *[
             session.create(SearchIndexInt, doc_id=i, key_id=q2.id, value=i * i)

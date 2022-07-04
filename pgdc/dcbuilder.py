@@ -32,7 +32,7 @@ class DcBuilder:
         )
         self.attrs = [f.name for f in self.fields]
         self.pkeys_string = ", ".join(self.pkeys)
-        self.select_string = ",".join(
+        self.select_string = ", ".join(
             f.metadata.get("select") or f.name for f in self.fields
         )
 
@@ -88,12 +88,12 @@ class DcBuilder:
         )
 
     def insert(
-        self, update_on_collision: bool = False, **kwargs: dict[str, ValidSqlArg]
+        self, update_on_collision: bool = False, **kwargs: ValidSqlArg
     ) -> tuple[str, dict[str, ValidSqlArg]]:
 
         attrs_string = ", ".join(kwargs.keys())
         values_string = ", ".join(["{" + key + "}" for key in kwargs.keys()])
-        upsert_string = ""
+        upsert_string = "-- No conflict clause"
 
         if update_on_collision:
             upsert_attrs = ", ".join(
@@ -131,6 +131,7 @@ class DcBuilder:
 
         return (
             f"""
+            -- Deleting {self._cls}.
             DELETE FROM {self.table_name}
             {where};""",
             where.args(),

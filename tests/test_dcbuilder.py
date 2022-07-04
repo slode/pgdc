@@ -7,47 +7,52 @@ from pgdc import (
     DcBuilder,
     render,
     session,
+    Verbatim,
 )
 
 from .models import SearchKey, SearchIndexInt
 
 
-async def test_insert():
+async def _test_insert():
     builder = DcBuilder(SearchKey, table_name="search_keys", pkeys=("id",))
-    query, args = render(*builder.insert(key=2))
+    sql = builder.insert(key=2, date_created=Verbatim("CURRENT_TIMESTAMP"))
+    query, args = render(*sql)
     print(query, args)
-    query, args = render(*builder.insert(key=2), flavor="psycopg2")
+    query, args = render(*sql, flavor="psycopg2")
     print(query, args)
 
 
-async def test_select():
-    builder = DcBuilder(SearchKey, pkeys=("id",))
-    query, args = render(*builder.select(Where(id=699), Limit(1)))
+async def _test_select():
+    builder = DcBuilder(SearchKey, pkey="id")
+    sql = builder.select(Where(id=699), Limit(1))
+    query, args = render(*sql)
     print(query, args)
-    query, args = render(*builder.select(Where(id=699), Limit(1)), flavor="psycopg2")
+    query, args = render(*sql, flavor="psycopg2")
     print(query, args)
 
 
 async def test_update():
     builder = DcBuilder(SearchKey)
-    query, args = render(*builder.update(Where(id=1), key="updated-key-text"))
-    print(query, args)
-    query, args = render(
-        *builder.update(Where(id=1), key="updated-key-text"), flavor="psycopg2"
+    sql = builder.update(
+        Where(id=1), key="updated-key-text", date_created=Verbatim("NOW()")
     )
+    query, args = render(*sql)
+    print(query, args)
+    query, args = render(*sql, flavor="psycopg2")
     print(query, args)
 
 
-async def test_delete():
+async def _test_delete():
     builder = DcBuilder(SearchKey)
 
-    query, args = render(*builder.delete(Where(id=1)))
+    sql = builder.delete(Where(id=1))
+    query, args = render(*sql)
     print(query, args)
-    query, args = render(*builder.delete(Where(id=1)), flavor="psycopg2")
+    query, args = render(*sql, flavor="psycopg2")
     print(query, args)
 
 
-async def test_custom_sql():
+async def _test_custom_sql():
     raw_query = """
         SELECT
             id, key, date_created

@@ -8,7 +8,7 @@ from pgdc import Relation
 
 
 @dataclass(frozen=True)
-class SearchKey(Relation, table_name="search_keys", pkeys="id"):
+class SearchKey(Relation, table_name="search_keys", pkey="id"):
     id: Optional[int]
     key: str
     date_created: datetime

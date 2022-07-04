@@ -1,4 +1,4 @@
-from typing import Any, Optional, Sequence
+from typing import Optional, Sequence
 
 from .args import ValidSqlArg
 from .where import Where, Limit
@@ -15,7 +15,7 @@ class SqlBuilder:
     def __init__(
         self,
         table_name: str,
-        attrs: Sequence[Any] = tuple(),
+        attrs: Sequence[str] = tuple(),
         pkeys: Sequence[str] = tuple(),
     ):
         self.table_name = table_name
@@ -50,7 +50,7 @@ class SqlBuilder:
     def update(
         self,
         where: Optional[Where] = None,
-        **kwargs: dict[str, ValidSqlArg],
+        **kwargs: ValidSqlArg,
     ) -> tuple[str, dict[str, ValidSqlArg]]:
         """
         Returns the raw, unrendered sql update query
@@ -74,7 +74,7 @@ class SqlBuilder:
         )
 
     def insert(
-        self, **kwargs: dict[str, ValidSqlArg]
+        self, **kwargs: ValidSqlArg
     ) -> tuple[str, dict[str, ValidSqlArg]]:
 
         attrs_string = ", ".join(kwargs.keys())

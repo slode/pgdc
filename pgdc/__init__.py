@@ -1,3 +1,4 @@
+from .args import Verbatim
 from .builders import (
     SqlBuilder,
 )
@@ -28,5 +29,6 @@ __all__ = [
     "Select",
     "Session",
     "DcBuilder",
+    "Verbatim",
     "Where",
 ]

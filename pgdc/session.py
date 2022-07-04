@@ -16,10 +16,13 @@ class Session:
     __object_registry__: dict[PKeyType, list[Relation]] = {}
     __sql_builder_cache__: dict[Type[Relation], DcBuilder] = {}
 
-    def __init__(self, pool: asyncpg.Pool):
+    def __init__(self, pool: asyncpg.Pool, debug: bool = False):
         self.pool: asyncpg.pool = pool
+        self.debug = debug
 
     async def _execute(self, query: str, args: list[ValidSqlArg]) -> str:
+        if self.debug:
+            print(query, args)
         async with self.pool.acquire() as conn:
             return await conn.execute(query, *args)
 
@@ -28,10 +31,14 @@ class Session:
         query: str,
         args: list[ValidSqlArg],
     ) -> Optional[asyncpg.Record]:
+        if self.debug:
+            print(query, args)
         async with self.pool.acquire() as conn:
             return await conn.fetchrow(query, *args)
 
     async def _fetch(self, query: str, args: list[ValidSqlArg]) -> list[asyncpg.Record]:
+        if self.debug:
+            print(query, args)
         async with self.pool.acquire() as conn:
             return await conn.fetch(query, *args)
 
