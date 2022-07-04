@@ -5,7 +5,7 @@ from dataclasses import fields, field
 
 from .args import ValidSqlArg
 from .clauses import OrderBy, Where, Limit
-from .mixins import Relation
+from .relation import Relation
 
 NoWhere = Where()
 NoLimit = Limit(None)

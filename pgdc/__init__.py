@@ -3,7 +3,7 @@ from .builders import (
     SqlBuilder,
 )
 from .dcbuilder import DcBuilder
-from .mixins import Relation
+from .relation import Relation
 from .render import render
 from .clauses import (
     And,
