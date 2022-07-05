@@ -1,5 +1,4 @@
-from typing import Union, Optional, Sequence
-from dataclasses import dataclass
+from typing import Optional, Sequence
 
 
 class Relation:
@@ -11,7 +10,7 @@ class Relation:
         table_name: Optional[str] = None,
         pkey: Optional[str] = None,
         pkeys: Optional[Sequence[str]] = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init_subclass__(**kwargs)
 

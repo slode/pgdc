@@ -1,5 +1,3 @@
-import dataclasses
-
 from typing import Any, Literal, Optional, Union
 
 VerbTypes = Literal["NOW()", "CURRENT_TIMESTAMP"]
@@ -18,7 +16,8 @@ ValidSqlArg = Union[Any, Verbatim]
 
 class SqlArgs:
     def __init__(self, args: Optional[dict[str, ValidSqlArg]] = None):
-        ...
+        self._args: dict[str, ValidSqlArg] = args or {}
+        self._used_values: list[ValidSqlArg] = []
 
     def __getitem__(self, key: str) -> ValidSqlArg:
         ...
@@ -28,10 +27,6 @@ class SqlArgs:
 
 
 class Psychopg2Args(SqlArgs):
-    def __init__(self, args: Optional[dict[str, ValidSqlArg]] = None):
-        self._args: dict[str, ValidSqlArg] = args or {}
-        self._used_values: list[ValidSqlArg] = []
-
     def __getitem__(self, key: str) -> ValidSqlArg:
         if isinstance(self._args[key], Verbatim):
             return str(self._args[key])
@@ -45,8 +40,7 @@ class Psychopg2Args(SqlArgs):
 
 class AsyncpgArgs(SqlArgs):
     def __init__(self, args: Optional[dict[str, ValidSqlArg]] = None):
-        self._args: dict[str, ValidSqlArg] = args or {}
-        self._used_values: list[ValidSqlArg] = []
+        super().__init__(args)
         self._used_args: dict[str, str] = {}
 
     def __getitem__(self, key: str) -> ValidSqlArg:

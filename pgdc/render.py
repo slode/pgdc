@@ -1,9 +1,11 @@
-from typing import Any, Literal, Optional, Union, Iterable
+from typing import Literal
 
-from .builders import SqlBuilder
-from .args import SqlArgs, AsyncpgArgs, Psychopg2Args, ValidSqlArg
-
-from dataclasses import dataclass
+from .args import (
+    AsyncpgArgs,
+    Psychopg2Args,
+    SqlArgs,
+    ValidSqlArg,
+)
 
 
 def render(

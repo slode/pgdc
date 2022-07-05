@@ -1,10 +1,8 @@
-from typing import Type, Optional, Sequence
-
 import dataclasses
-from dataclasses import fields, field
+from typing import Optional, Sequence, Type
 
 from .args import ValidSqlArg
-from .clauses import OrderBy, Where, Limit
+from .clauses import Limit, OrderBy, Where
 from .relation import Relation
 
 NoWhere = Where()
@@ -48,7 +46,7 @@ class DcBuilder:
         where = where or NoWhere
         order_by = order_by or NoOrder
         limit = limit or NoLimit
-        return (
+        return (  # nosec
             f"""
             -- Fetching {self._cls}.
             SELECT
@@ -64,7 +62,7 @@ class DcBuilder:
     def update(
         self,
         where: Optional[Where] = None,
-        **kwargs: dict[str, ValidSqlArg],
+        **kwargs: ValidSqlArg,
     ) -> tuple[str, dict[str, ValidSqlArg]]:
         """
         Returns the raw, unrendered sql update query
@@ -74,7 +72,7 @@ class DcBuilder:
         where = where or NoWhere
         update_string = ", ".join([key + " = {" + key + "}" for key in kwargs.keys()])
 
-        return (
+        return (  # nosec
             f"""
             -- Updating {self._cls}.
             UPDATE
@@ -103,13 +101,15 @@ class DcBuilder:
                     if key not in self.pkeys
                 ]
             )
-            upsert_string = f"""
-                -- Update on conflict
+            upsert_string = (  # nosec
+                f"""-- Update on conflict"""
+                f"""
                 ON CONFLICT ({self.pkeys_string}) DO UPDATE
                 SET {upsert_attrs}
-            """
+                """
+            )
 
-        return (
+        return (  # nosec
             f"""
             -- Insert {self._cls}.
             INSERT INTO
@@ -129,7 +129,7 @@ class DcBuilder:
         assert where is not None
         where = where or NoWhere
 
-        return (
+        return (  # nosec
             f"""
             -- Deleting {self._cls}.
             DELETE FROM {self.table_name}
